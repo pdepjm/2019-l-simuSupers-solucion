@@ -53,3 +53,71 @@ esMarca(Marca):-
   esDeMarca(Producto,Marca).
 
 % PUNTO 3
+esPrimeraMarca(laSerenisima).
+esPrimeraMarca(gallo).
+esPrimeraMarca(vienisima).
+
+descuento(Producto,Descuento):-
+  precioUnitario(Producto,_),
+  descuentoPorProducto(Producto,Descuento).
+descuentoPorProducto(arroz(luchetti),15).
+descuentoPorProducto(salchichas(Marca,Cantidad),5) :- Marca \= vienisima, Cantidad > 6.
+descuentoPorProducto(lacteo(_,leche),20).
+descuentoPorProducto(lacteo(Marca,queso(_)),20) :- esPrimeraMarca(Marca).
+
+
+% PUNTO 4
+esCliente(Alguien):-
+  compro(Alguien,_).
+
+expertoEnAhorro(Cliente):-
+  esCliente(Cliente),
+  forall(esBuenProductodeAhorro(Producto), compro(Cliente,Producto)).
+
+esBuenProductodeAhorro(Producto):-
+  precioUnitario(Producto,_),
+  tieneDescuento(Producto),
+  productoDePrimera(Producto).
+
+tieneDescuento(Producto):- descuento(Producto,_). %se debate
+
+productoDePrimera(Producto):- 
+  esDeMarca(Producto,Marca),
+  esPrimeraMarca(Marca).
+
+% PUNTO 5
+totalAPagar(Cliente,TotalCompra):-
+  esCliente(Cliente),
+  findall(Precio,precioAPagar(Cliente,Precio),Precios),
+  sumlist(Precios,TotalCompra).
+
+
+precioAPagar(Cliente,Precio):-
+  compro(Cliente,Producto),
+  precioUnitario(Producto,PrecioUnitario),
+  precioReal(Producto,PrecioUnitario,Precio).
+
+precioReal(Producto,Precio,PrecioFinal):-
+  descuento(Producto,Descuento),
+  PrecioFinal is Precio - Precio * (Descuento/100).
+
+
+precioReal(Producto,PrecioFinal,PrecioFinal):-  not(descuento(Producto,_)).
+
+% PUNTO 6
+
+%duenio(MarcaDuenia,OtraMarca).
+duenio(laSerenisima, gandara).
+duenio(gandara, vacalin).
+
+provee(Marca,ListaDeProductos):-
+  esMarca(Marca),
+  findall(Producto,proveeProducto(Producto,Marca),ListaDeProductos).
+
+proveeProducto(Producto,Marca):-  
+  precioUnitario(Producto,_),
+  esDeMarca(Producto,Marca).
+
+proveeProducto(Producto,Marca):- 
+  duenio(Marca,OtraMarca),
+  proveeProducto(Producto,OtraMarca).
